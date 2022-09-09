@@ -2,7 +2,7 @@
   "name": "app-manager",
   "version": "0.0.0",
   "dependencies": {
-    "chokidar": "^2.1.0",
+    "chokidar": "^3.5.3",
     "ip": "^1.1.5",
     "request": "^2.88.0",
     "uuid": "^3.3.2"
