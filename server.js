@@ -10,7 +10,7 @@ const path = require('path');
 const url = require('url');
 const uuidv4 = require('uuid/v4');
 const chokidar = require('chokidar');
-const request = require('request');
+const tiny = require('tiny-json-http');
 const ip = require('ip');
 
 // These directory names are also referenced in other scripts!
@@ -648,15 +648,16 @@ function on_add_dir(directory_path) {
 
     // Create a new record in the data store for this simulation id.
     var url = rest_api_url_data + REST_API_URL_COLLECTIONS;
-    request.post({
+    tiny.post({
       url: url,
-      body: { 'uuid': uuid },
-      json: true
-    }, (error, response, body) => {
-      handle_data_response('on_add_dir', url, error, response, body);
+      data: { 'uuid': uuid },
+    }, 
+    function _res(err, res) {
+        handle_data_response('on_add_dir', url, err, res, res.body);
     });
   }
 }
+
 
 /**
  * React when convert.sh has written a new file.
@@ -679,16 +680,14 @@ function on_file_add(file_path) {
     var file_name = path.basename(file_path);
     var url = rest_api_url_data + REST_API_URL_COLLECTION;
     if (/^STOP$/i.test(file_name)) {
-      request.post({
+      tiny.post({
         url: url,
-        body: {
-          'uuid': uuid,
-          'stop': 'STOP'
-        },
-        json: true
-      }, (error, response, body) => {
-        handle_data_response('on_file_add', url, error, response, body);
+        data: {'uuid': uuid, 'stop': 'STOP'},
+      },
+      function _res(err, res) {
+        handle_data_response('on_file_add', url, err, res, res.body);
       });
+
     } else if (/^STD(ERR|OUT)$/i.test(file_name)) {
       //
     }
@@ -748,17 +747,18 @@ function on_file_change(file_path) {
 
             if (send_it) {
               var url = rest_api_url_data + REST_API_URL_COLLECTION;
-              request.post({
+              tiny.post({
                 url: url,
-                body: {
+                data:{
                   'uuid': uuid,
                   'filetitle': file_name_no_ext,
                   'contents': parsed
                 },
-                json: true
-              }, (error, response, body) => {
-                handle_data_response('on_file_change', url, error, response, body);
+              },
+              function _res(err, res) {
+                handle_data_response('on_file_change', url, err, res, res.body);
               });
+
             }
           }
         });
@@ -775,17 +775,18 @@ function on_file_change(file_path) {
           } else {
             var url = rest_api_url_data + REST_API_URL_COLLECTION;
             console.log('Posting to ' + url + ': ' + contents);
-            request.post({
+            tiny.post({
               url: url,
-              body: {
+              data: {
                 'uuid': uuid,
                 'filetitle': file_name,
                 'contents': contents
               },
-              json: true
-            }, (error, response, body) => {
-              handle_data_response('on_file_change', url, error, response, body);
+            },
+            function _res(err, res) {
+              handle_data_response('on_file_change', url, err, res, res.body);
             });
+
           }
         });
       }

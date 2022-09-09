@@ -9,7 +9,7 @@ USER root
 RUN apk add --no-cache inotify-tools jq oniguruma linux-headers
 
 RUN mkdir -p /home/appredict/apps/app-manager/node_modules/ /home/appredict/apps/node/ && \
-    chown -R appredict:appredict /home/appredict/apps/app-manager /home/appredict/apps/node
+    chown -R appredict:appredict /home/appredict/apps/app-manager /home/appredict/
 
 ################################################################################
 # 1. Fix node version (i.e. don't rely on apk version)                         #
