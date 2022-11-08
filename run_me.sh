@@ -65,6 +65,9 @@ else
     # https://github.com/Chaste/ApPredict/blob/master/src/lookup/LookupTableLoader.cpp
   fi
 
+  # Reccord version info
+  ${appredict} --version >> ${output_dir}/STDOUT
+
   # Record the ApPredict args for posterity!
   echo "ApPredict args : ${appredict_args}" >> ${output_dir}/STDOUT
 
