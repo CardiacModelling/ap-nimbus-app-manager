@@ -8,7 +8,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
+
 const chokidar = require('chokidar');
 const tiny = require('tiny-json-http');
 const ip = require('ip');
