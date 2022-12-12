@@ -65,6 +65,9 @@ else
     # https://github.com/Chaste/ApPredict/blob/master/src/lookup/LookupTableLoader.cpp
   fi
 
+  # Reccord python versions
+  python -m pip freeze >> ${output_dir}/STDOUT
+
   # Reccord version info
   ${appredict} --version >> ${output_dir}/STDOUT
 
