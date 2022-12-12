@@ -66,6 +66,7 @@ else
   fi
 
   # Reccord python versions
+  /home/appredict/build/codegen_python3_venv/bin/python --version >> ${output_dir}/STDOUT
   /home/appredict/build/codegen_python3_venv/bin/python -m pip freeze >> ${output_dir}/STDOUT
 
   # Reccord version info
