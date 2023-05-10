@@ -1042,7 +1042,7 @@ const server = http.createServer((request, response) => {
             break;
           default:
             return_obj = {
-              'error': 'Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
+              'error': 'Operation' + operation + 'is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
             }
             break;
         }
@@ -1136,4 +1136,9 @@ const port = port_in_env ? process.env.REST_API_PORT : default_port;
 
 const host = '0.0.0.0';
 server.listen(port, host);
+
+// Adjust timeouts for connections to prevent errors see https://connectreport.com/blog/tuning-http-keep-alive-in-node-js/
+server.keepAliveTimeout = (60 * 1000) + 1000;
+server.headersTimeout = (60 * 1000) + 2000;
+
 console.log('INFO3 : app-manager listening at http://' + host + ':' + port);
