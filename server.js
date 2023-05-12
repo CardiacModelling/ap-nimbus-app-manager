@@ -897,7 +897,6 @@ const server = http.createServer((request, response) => {
     }
 
     console.log('DEBUG : Request path : ' + pathname_data);
-    var keep_alive = components.includes('keep_alive');
 
     let body = [];
     request.on('data', (data) => {
@@ -930,28 +929,12 @@ const server = http.createServer((request, response) => {
       console.log('DEBUG : Request body : ' + body);
     });
 
-    /*
-     * Going to ask for client to close connection after container has kicked
-     * off a simulation.
-     * If the client is a browser it's more than likely Connection will be
-     * 'keep-alive' which if there's app-manager replication, it will cause all
-     * simulation requests to end up hitting the same container (until the
-     * keep-alive timeout is reached, e.g. 115 seconds on FF I think - see
-     * about:config).
-     * Some clients may be restricted in the capacity to send all data in a
-     * single POST request, and as such require additional 'data' calls to the
-     * REST API, in which case the "Connection: close" needs to be removed.
-     */
     var response_headers = {
       'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, cache-control, pragma, expires, connection',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json' };
 
-    if (!keep_alive) {
-      console.log('DEBUG : Adding \'Connection: close\' to response headers');
-      response_headers.Connection = 'close';
-    }
     response.writeHead(200, response_headers);
 
     /*
@@ -1042,7 +1025,7 @@ const server = http.createServer((request, response) => {
             break;
           default:
             return_obj = {
-              'error': 'Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
+              'error': 'Operation' + operation + 'is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
             }
             break;
         }
@@ -1136,4 +1119,5 @@ const port = port_in_env ? process.env.REST_API_PORT : default_port;
 
 const host = '0.0.0.0';
 server.listen(port, host);
+
 console.log('INFO3 : app-manager listening at http://' + host + ':' + port);
