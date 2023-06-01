@@ -62,7 +62,7 @@ else
     ln -s ${appredict_home}/*.arch .
     # Don't bother with the manifest file as it either; gets ignored if no
     # internet access, or replaced if internet access. See
-    # https://github.com/Chaste/ApPredict/blob/master/src/lookup/LookupTableLoader.cpp
+    # https://github.com/Chaste/ApPredict/blob/main/src/lookup/LookupTableLoader.cpp
   fi
 
   # Reccord python versions
