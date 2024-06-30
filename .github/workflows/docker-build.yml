@@ -29,6 +29,8 @@ jobs:
           context: .
           pull: true
           push: true
+          build-args: |
+            node_version=20
           tags: |
             cardiacmodelling/ap-nimbus-app-manager:2.0.0
             cardiacmodelling/ap-nimbus-app-manager:latest
