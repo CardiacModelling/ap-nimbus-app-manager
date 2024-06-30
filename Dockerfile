@@ -21,7 +21,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g npm@10.8.1 && \
-    npm cache clean --force
+    mkdir -p /home/appredict/.npm && \
+    chown -R appredict:appredict /home/appredict/.npm
 
 ################################################################################
 # Install rest of app.                                                         #
