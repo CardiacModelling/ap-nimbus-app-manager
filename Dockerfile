@@ -8,7 +8,8 @@ USER root
 
 RUN apt-get update && \
     apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_${node_version}.x -o nodesource_setup.sh && \
+    curl -fsSL https://deb.nodesource.com/setup_${node_version}.x \
+         -o nodesource_setup.sh && \
     bash nodesource_setup.sh && \
     apt-get install -y nodejs && \
     rm -f nodesource_setup.sh && \
@@ -19,22 +20,21 @@ RUN apt-get update && \
     libonig-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN npm install --global npm@10.7.0
-
-RUN mkdir -p /home/appredict/apps/app-manager/node_modules/ && \
-    chown -R appredict:appredict /home/appredict/apps/app-manager
+RUN npm install -g npm@10.8.1
 
 ################################################################################
 # Install rest of app.                                                         #
 ################################################################################
 
-COPY --chown=appredict:appredict kick_off.sh convert.sh package.json package-lock.json run_me.sh server.js /home/appredict/apps/app-manager/
+USER appredict
+
+RUN mkdir -p /home/appredict/apps/app-manager/node_modules/
 
 WORKDIR /home/appredict/apps/app-manager
 
-USER appredict
+COPY --chown=appredict:appredict *.sh *.json *.js ./
 
-RUN chmod +x /home/appredict/apps/app-manager/*.sh
+RUN chmod +x *.sh
 
 RUN npm ci
 
