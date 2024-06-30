@@ -20,7 +20,8 @@ RUN apt-get update && \
     libonig-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g npm@10.8.1
+RUN npm install -g npm@10.8.1 && \
+    npm cache clean --force
 
 ################################################################################
 # Install rest of app.                                                         #
