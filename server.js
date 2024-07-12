@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const chokidar = require('chokidar');
 const tiny = require('tiny-json-http');
-const ip = require('ip');
+const os = require('os');
 
 // These directory names are also referenced in other scripts!
 const DIR_APPREDICT_RESULTS = concatenator([ __dirname, 'res'], false);
@@ -846,6 +846,21 @@ function write_stderr(std_file_prefix, stderr_file, stop_file, messages) {
   });
 }
 
+/**
+ * Return the first non-internal IPv4 address, or the loopback address if none.
+ */
+function ip_address() {
+  const interfaces = os.networkInterfaces();
+  for (const networks of Object.values(interfaces)) {
+    for (const network of networks) {
+      if (network.family === 'IPv4' && !network.internal) {
+        return network.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
+
 /******************************************************************************/
 
 if (typeof process.env.REST_API_URL_DATA !== 'undefined' && process.env.REST_API_URL_DATA != '') {
@@ -946,7 +961,7 @@ const server = http.createServer((request, response) => {
     return_obj = {
       'success': {
         'id': simulation_id,
-        'ip': ip.address()
+        'ip': ip_address()
       }
     };
 

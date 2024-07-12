@@ -3,7 +3,6 @@
   "version": "2.0.0",
   "dependencies": {
     "chokidar": "^3.6.0",
-    "ip": "^2.0.1",
     "tiny-json-http": "^7.5.1",
     "uuid": "^10.0.0"
   }
