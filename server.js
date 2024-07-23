@@ -62,9 +62,10 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This version of Chaste was compiled on:
-Thu, 16 Jul 2020 08:55:38 +0000 by Linux a35b77f7ac32 4.15.0-55-generic #60-Ubuntu SMP Tue Jul 2 18:22:20 UTC 2019 x86_64 (uname)
-from revision number 9c205f0 with build type GccOpt, shared libraries.
+Thu, 27 Jun 2024 14:24:11 +0000 by Linux (uname)
+from revision number 69d202c with build type Release.
 
+ApPredict is based on commit 2e5f95660609c5e2f8ed21be3b71455a6b1744b2.
 # 0 arguments supplied.
 
 ***********************************************************************************************
@@ -74,7 +75,9 @@ from revision number 9c205f0 with build type GccOpt, shared libraries.
 *   options: 1 = Shannon, 2 = TenTusscher (06), 3 = Mahajan,
 *            4 = Hund-Rudy, 5 = Grandi, 6 = O'Hara-Rudy 2011 (endo),
 *            7 = Paci (ventricular), 8 = O'Hara-Rudy CiPA v1 2017 (endo)
-* OR --cellml <file>
+*            9 = Faber-Rudy.
+* OR --model <name of pre-compiled cellmlfile (without .cellml)>
+* OR --model <file> (a CellML file, relative to current working directory or an absolute path)
 *
 * SPECIFYING PACING:
 * --pacing-freq            Pacing frequency (Hz) (optional - defaults to 1Hz)
@@ -126,6 +129,15 @@ from revision number 9c205f0 with build type GccOpt, shared libraries.
 *   Time(any units)<tab>Conc_trace_1(uM)<tab>Conc_trace_2(uM)<tab>...Conc_trace_N(uM)
 *   on each row.
 *
+* SECOND DRUG:
+* To run a second compound, with independent binding model
+* That is, total_block = block_drug_1 + block_drug_2 - block_drug_1*block_drug_2
+* Supply the following argument:
+* --drug-two-conc-factor  Factor to multiply the concentrations of drug 1 (specified as above)
+*                            to use when evaluating the block due to drug 2. 
+* To specify drug properties (and UQ below) use the same format, but just before the channel name
+* insert 'drug-two-' into the option names, for instance:  --pic50-drug-two-herg 
+*
 * UNCERTAINTY QUANTIFICATION:
 * --credible-intervals [x y z...] This flag must be present to do uncertainty calculations.
 *                      It can optionally be followed by a specific list of percentiles that are required
@@ -136,6 +148,9 @@ from revision number 9c205f0 with build type GccOpt, shared libraries.
 *   (for details of what these spread parameters are see 'sigma' and '1/beta' in Table 1 of:
 *    Elkins et al. 2013  Journal of Pharmacological and Toxicological 
 *    Methods, 68(1), 112-122. doi: 10.1016/j.vascn.2013.04.007 )
+* --brute-force <N>  Make credible intervals with brute force forward simulations,
+*                    rather than using lookup tables, and do N samples each time.
+*
 *
 * OTHER OPTIONS:
 * --no-downsampling  By default, we print downsampled output to create small action potential
@@ -143,32 +158,36 @@ from revision number 9c205f0 with build type GccOpt, shared libraries.
 * --output-dir       By default output goes into '$CHASTE_TEST_OUTPUT/ApPredict_output'
 *                    but you can redirect it (useful for parallel scripting)
 *                    with this argument.
+* --version          Print out Chaste and ApPredict versions, along with dependency versions
+*                    and exit immediately (this info automatically goes to a 'provenance_info.txt' 
+*                    file on completion of a normal run without this flag).
 *
 `;
 
-const HELP_LOOKUP_TABLE_MANIFEST = `grandi_pasqualini_bers_2010_1d_hERG_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_1d_ICaL_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_1d_IK1_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_1d_IKs_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_1d_INa_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_2d_hERG_ICaL_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_3d_hERG_IKs_ICaL_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_3d_hERG_INa_ICaL_1Hz_generator.arch.tgz
-grandi_pasqualini_bers_2010_4d_hERG_IKs_INa_ICaL_1Hz_generator.arch.tgz
+const HELP_LOOKUP_TABLE_MANIFEST = `grandi_pasqualini_bers_2010_epi_1d_hERG_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_1d_ICaL_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_1d_IK1_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_1d_IKs_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_1d_INa_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_2d_hERG_ICaL_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_3d_hERG_IKs_ICaL_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_3d_hERG_INa_ICaL_1Hz_generator.arch.tgz
+grandi_pasqualini_bers_2010_epi_4d_hERG_IKs_INa_ICaL_1Hz_generator.arch.tgz
 HundRudy2004_units_1d_hERG_1Hz_generator.arch.tgz
 HundRudy2004_units_3d_hERG_INa_ICaL_1Hz_generator.arch.tgz
 MahajanShiferaw2008_units_1d_hERG_1Hz_generator.arch.tgz
 MahajanShiferaw2008_units_3d_hERG_INa_ICaL_1Hz_generator.arch.tgz
-ohara_rudy_2011_1d_hERG_1Hz_generator.arch.tgz
 ohara_rudy_2011_endo_1d_hERG_1Hz_generator.arch.tgz
 ohara_rudy_2011_endo_3d_hERG_INa_ICaL_1Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_1d_hERG_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_1d_ICaL_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_1d_INa_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_2d_hERG_ICaL_0.5Hz_generator.arch.tgz
+ohara_rudy_cipa_v1_2017_3d_hERG_ICaL_INaL_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_3d_hERG_IKs_ICaL_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_3d_hERG_IKs_ICaL_1Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_3d_hERG_INa_ICaL_0.5Hz_generator.arch.tgz
+ohara_rudy_cipa_v1_2017_4d_hERG_IKs_INa_ICaL_0.5Hz_generator.arch.tgz
 ohara_rudy_cipa_v1_2017_4d_hERG_INa_ICaL_INaL_0.5Hz_generator.arch.tgz
 paci_hyttinen_aaltosetala_severi_ventricularVersion_1d_hERG_1Hz_generator.arch.tgz
 shannon_wang_puglisi_weber_bers_2004_model_updated_1d_hERG_0.5Hz_generator.arch.tgz
