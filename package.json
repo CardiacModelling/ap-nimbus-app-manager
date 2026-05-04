@@ -4,6 +4,6 @@
   "dependencies": {
     "chokidar": "^3.6.0",
     "tiny-json-http": "^7.5.1",
-    "uuid": "^10.0.0"
+    "uuid": "^14.0.0"
   }
 }
