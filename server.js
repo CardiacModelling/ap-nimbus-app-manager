@@ -436,7 +436,13 @@ function call_invoke(appredict_input, config) {
     }
 
 
-    var args = `--pacing-freq ${appredict_input.pacingFrequency} --pacing-max-time ${appredict_input.pacingMaxTime} `;
+    var args = '';
+    if (typeof appredict_input.pacingFrequency !== 'undefined') {
+      args += `--pacing-freq ${appredict_input.pacingFrequency} `;
+    }
+    if (typeof appredict_input.pacingMaxTime !== 'undefined') {
+      args += `--pacing-max-time ${appredict_input.pacingMaxTime} `;
+    }
 
     var spreads_detected = false;
 
@@ -1059,7 +1065,7 @@ const server = http.createServer((request, response) => {
             break;
           default:
             return_obj = {
-              'error': 'Operation' + operation + 'is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
+              'error': 'Operation "' + operation + '"is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
             }
             break;
         }
