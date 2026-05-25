@@ -3,3 +3,5 @@
 /run/
 /.project
 /node_modules
+
+.DS_Store
