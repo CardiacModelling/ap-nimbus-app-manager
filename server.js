@@ -436,10 +436,7 @@ function call_invoke(appredict_input, config) {
     }
 
 
-    var args = '';
-    if (typeof appredict_input.pacingFrequency !== 'undefined') {
-      args += `--pacing-freq ${appredict_input.pacingFrequency} `;
-    }
+    var args = `--pacing-freq ${appredict_input.pacingFrequency} `;
     if (typeof appredict_input.pacingMaxTime !== 'undefined') {
       args += `--pacing-max-time ${appredict_input.pacingMaxTime} `;
     }
