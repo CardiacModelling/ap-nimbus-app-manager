@@ -8,7 +8,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const chokidar = require('chokidar');
 const tiny = require('tiny-json-http');
@@ -910,7 +910,7 @@ const server = http.createServer((request, response) => {
   var components = pathname_data.split(path.sep);
 
   if (request.method == 'POST') {
-    var simulation_id = uuidv4();
+    var simulation_id = randomUUID();
 
     var run_dir = concatenator( [ DIR_APPREDICT_RUN, simulation_id], false);
     var res_dir = concatenator( [ DIR_APPREDICT_RESULTS, simulation_id], false);
