@@ -437,9 +437,7 @@ function call_invoke(appredict_input, config) {
 
 
     var args = `--pacing-freq ${appredict_input.pacingFrequency} `;
-    if (has_data(appredict_input.pacingMaxTime) &&
-        !isNaN(parseFloat(appredict_input.pacingMaxTime)) &&
-        isFinite(appredict_input.pacingMaxTime)) {
+    if (has_data(appredict_input.pacingMaxTime)) {
       args += `--pacing-max-time ${appredict_input.pacingMaxTime} `;
     }
 
