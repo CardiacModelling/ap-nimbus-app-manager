@@ -1065,7 +1065,7 @@ const server = http.createServer((request, response) => {
             break;
           default:
             return_obj = {
-              'error': 'Operation "' + operation + '"is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
+              'error': 'Operation "' + operation + '"is invalid. Valid data query options are: "STDERR", "STDOUT", "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
             }
             break;
         }
