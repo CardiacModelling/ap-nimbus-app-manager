@@ -1,0 +1,43 @@
+name: docker-test
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Build Docker image
+        run: docker build -t ap-nimbus-app-manager:test .
+
+      - name: Run app-manager container
+        run: docker run -d --name app-manager-ci -p 8080:8080 ap-nimbus-app-manager:test
+
+      - name: Run simulation test from host
+        env:
+          BASE_URL: http://localhost:8080
+        run: npm run test:simulation
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs app-manager-ci
+
+      - name: Stop and remove container
+        if: always()
+        run: docker rm -f app-manager-ci

@@ -32,7 +32,7 @@ const RUNME_SCRIPT = './run_me.sh';
 
 /**************************** OPTIONS help texts    ***************************/
 
-const HELP_APPREDICT = `Copyright (c) 2005-2024, University of Oxford.
+const HELP_APPREDICT = `Copyright (c) 2005-2026, University of Oxford.
 All rights reserved.
 
 University of Oxford means the Chancellor, Masters and Scholars of the
@@ -436,7 +436,10 @@ function call_invoke(appredict_input, config) {
     }
 
 
-    var args = `--pacing-freq ${appredict_input.pacingFrequency} --pacing-max-time ${appredict_input.pacingMaxTime} `;
+    var args = `--pacing-freq ${appredict_input.pacingFrequency} `;
+    if (has_data(appredict_input.pacingMaxTime)) {
+      args += `--pacing-max-time ${appredict_input.pacingMaxTime} `;
+    }
 
     var spreads_detected = false;
 
@@ -1059,7 +1062,7 @@ const server = http.createServer((request, response) => {
             break;
           default:
             return_obj = {
-              'error': 'Operation' + operation + 'is invalid. Valid data query options are: "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
+              'error': 'Operation ' + operation + ' is invalid. Valid data query options are: "STDERR", "STDOUT", "STOP", "voltage_traces", "voltage_results", "progress_status", "q_net", "pkpd_results", "messages" and "received"'
             }
             break;
         }
