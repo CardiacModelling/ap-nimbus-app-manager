@@ -246,14 +246,14 @@ test(
       const expectedRow = EXPECTED_VOLTAGE_RESULTS[i];
 
       assert.equal(actualRow.c, expectedRow.c, `voltage_results ${i} c`);
-      assertAlmostEqual(actualRow.uv, expectedRow.uv, 5, `voltage_results ${i} uv`);
-      assertAlmostEqual(actualRow.pv, expectedRow.pv, 1, `voltage_results ${i} pv`);
-      assertAlmostEqual(actualRow.a50, expectedRow.a50, 5, `voltage_results ${i} a50`);
-      assertAlmostEqual(actualRow.a90, expectedRow.a90, 5, `voltage_results ${i} a90`);
+      assertAlmostEqual(actualRow.uv, expectedRow.uv, 1e-3, `voltage_results ${i} uv`);
+      assertAlmostEqual(actualRow.pv, expectedRow.pv, 1e-3, `voltage_results ${i} pv`);
+      assertAlmostEqual(actualRow.a50, expectedRow.a50, 1e-3, `voltage_results ${i} a50`);
+      assertAlmostEqual(actualRow.a90, expectedRow.a90, 1e-3, `voltage_results ${i} a90`);
 
       assert.equal(actualRow.da90.length, expectedRow.da90.length, `voltage_results ${i} da90 length should match`);
       for (let j = 0; j < expectedRow.da90.length; j += 1) {
-        assertAlmostEqual(actualRow.da90[j], expectedRow.da90[j], 0.2, `voltage_results ${i} da90[${j}]`);
+        assertAlmostEqual(actualRow.da90[j], expectedRow.da90[j], 1e-3, `voltage_results ${i} da90[${j}]`);
       }
     }
   },
