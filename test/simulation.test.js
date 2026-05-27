@@ -183,6 +183,9 @@ test("posts request payload and validates output", { timeout: 120000 }, async ()
     30000
   );
 
+  console.log("Full STDOUT:\n", stdoutPayload.content, "\n\n");
+  console.log("Full voltage_results:\n", JSON.stringify(voltageResultsPayload.success, null, 2), "\n\n");
+
   assert.ok(
     EXPECTED_STDOUT.test(stdoutPayload.content),
     `Expected ApPredict args string not found in STDOUT. Got: ${stdoutPayload.content}`
