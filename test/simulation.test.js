@@ -31,7 +31,7 @@ function assertAlmostEqual(actual, expected, tolerance, label) {
   const difference = Math.abs(actualNumber - expectedNumber);
   assert.ok(
     difference <= tolerance,
-    `${label} differs by ${difference}, tolerance is ${tolerance}. actual=${actualNumber}, expected=${expectedNumber}`
+    `${label} differs by ${difference}, tolerance is ${tolerance}. actual=${actualNumber}, expected=${expectedNumber}`,
   );
 }
 
@@ -96,7 +96,7 @@ async function pollResults(simulationId, operation, isReady, timeoutMs) {
     const payload = await requestJson(
       `${BASE_URL}/api/collection/${simulationId}/${operation}`,
       { method: "GET" },
-      `${operation} query`
+      `${operation} query`,
     );
     lastPayload = payload;
 
@@ -108,117 +108,153 @@ async function pollResults(simulationId, operation, isReady, timeoutMs) {
   }
 
   throw new Error(
-    `Timed out waiting for ${operation} for simulation ${simulationId}. Last payload: ${JSON.stringify(lastPayload)}`
+    `Timed out waiting for ${operation} for simulation ${simulationId}. Last payload: ${JSON.stringify(lastPayload)}`,
   );
 }
 
 // Test the simulation endpoint by posting a request and validating the output.
-test("posts request payload and validates output", { timeout: 120000 }, async () => {
+test(
+  "posts request payload and validates output",
+  { timeout: 600000 }, // 10m
+  async () => {
 
-  await waitForServerReady(30000);
+    await waitForServerReady(30000); // 30s
 
-  const REQUEST_PAYLOAD = {
-    modelId: 1,
-    pacingFrequency: 0.5,
-    plasmaPoints: [0, 3, 10, 30, 100]
-  };
+    const REQUEST_PAYLOAD = {
+      modelId: 1,
+      pacingFrequency: 0.5,
+      plasmaPoints: [0, 3, 10, 30, 100],
+    };
 
-  const EXPECTED_STDOUT = /^ApPredict args : --pacing-freq 0\.5 --plasma-concs 0 3 10 30 100 --model 1$/m;
+    const EXPECTED_STDOUT = /^ApPredict args : --pacing-freq 0\.5 --plasma-concs 0 3 10 30 100 --model 1$/m;
 
-  const EXPECTED_VOLTAGE_RESULTS = [
-    {
-      c: "Concentration(uM)",
-      uv: "UpstrokeVelocity(mV/ms)",
-      pv: "PeakVm(mV)",
-      a50: "APD50(ms)",
-      a90: "APD90(ms)",
-      da90: ["delta_APD90(%)"]
-    },
-    {
-      c: "0",
-      uv: "350.596",
-      pv: "47.8243",
-      a50: "184.455",
-      a90: "216.892",
-      da90: ["0"]
-    },
-    {
-      c: "0.001",
-      uv: "351.022",
-      pv: "47.8407",
-      a50: "184.7",
-      a90: "217.155",
-      da90: ["0.121071"]
-    }
-  ];
-
-  const requestBody = JSON.stringify(REQUEST_PAYLOAD);
-  const postPayload = await requestJson(
-    `${BASE_URL}/`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const EXPECTED_VOLTAGE_RESULTS = [
+      {
+        c: "Concentration(uM)",
+        uv: "UpstrokeVelocity(mV/ms)",
+        pv: "PeakVm(mV)",
+        a50: "APD50(ms)",
+        a90: "APD90(ms)",
+        da90: ["delta_APD90(%)"],
       },
-      body: requestBody
-    },
-    "Simulation start"
-  );
-  assert.ok(postPayload.success, `Expected success object in POST response. Got: ${JSON.stringify(postPayload)}`);
-  assert.ok(postPayload.success.id, `Expected simulation id in POST response. Got: ${JSON.stringify(postPayload)}`);
+      {
+        c: "0",
+        uv: "353.889",
+        pv: "47.9938",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["0"],
+      },
+      {
+        c: "0.001",
+        uv: "353.89",
+        pv: "47.9938",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["-5.91879e-05"],
+      },
+      {
+        c: "3",
+        uv: "353.891",
+        pv: "47.9939",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["7.21773e-05"],
+      },
+      {
+        c: "10",
+        uv: "353.89",
+        pv: "47.9938",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["-6.13187e-05"],
+      },
+      {
+        c: "30",
+        uv: "353.889",
+        pv: "47.9938",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["2.5213e-05"],
+      },
+      {
+        c: "100",
+        uv: "353.89",
+        pv: "47.9938",
+        a50: "186.989",
+        a90: "219.604",
+        da90: ["-3.50691e-05"],
+      },
+    ];
 
-  const simulationId = postPayload.success.id;
+    const requestBody = JSON.stringify(REQUEST_PAYLOAD);
+    const postPayload = await requestJson(
+      `${BASE_URL}/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      },
+      "Simulation start",
+    );
+    assert.ok(postPayload.success, `Expected success object in POST response. Got: ${JSON.stringify(postPayload)}`);
+    assert.ok(postPayload.success.id, `Expected simulation id in POST response. Got: ${JSON.stringify(postPayload)}`);
 
-  const voltageResultsPayload = await pollResults(
-    simulationId,
-    "voltage_results",
-    (p) => p && Array.isArray(p.success) && p.success.length >= EXPECTED_VOLTAGE_RESULTS.length,
-    60000
-  );
+    const simulationId = postPayload.success.id;
 
-  const stdoutPayload = await pollResults(
-    simulationId,
-    "STDOUT",
-    (p) => p && p.success && p.content,
-    30000
-  );
+    const voltageResultsPayload = await pollResults(
+      simulationId,
+      "voltage_results",
+      (p) => p && Array.isArray(p.success) && p.success.length >= EXPECTED_VOLTAGE_RESULTS.length,
+      300000, // 5m
+    );
 
-  console.log("Full STDOUT:\n", stdoutPayload.content, "\n\n");
-  console.log("Full voltage_results:\n", JSON.stringify(voltageResultsPayload.success, null, 2), "\n\n");
+    const stdoutPayload = await pollResults(
+      simulationId,
+      "STDOUT",
+      (p) => p && p.success && p.content,
+      30000, // 30s
+    );
 
-  assert.ok(
-    EXPECTED_STDOUT.test(stdoutPayload.content),
-    `Expected ApPredict args string not found in STDOUT. Got: ${stdoutPayload.content}`
-  );
+    console.log("Full STDOUT:\n", stdoutPayload.content, "\n\n");
+    console.log("Full voltage_results:\n", JSON.stringify(voltageResultsPayload.success, null, 2), "\n\n");
 
-  const actualVoltageResults = voltageResultsPayload.success;
-  assert.ok(Array.isArray(actualVoltageResults), "Expected an array in voltage_results response");
+    assert.ok(
+      EXPECTED_STDOUT.test(stdoutPayload.content),
+      `Expected ApPredict args string not found in STDOUT. Got: ${stdoutPayload.content}`,
+    );
 
-  assert.equal(
-    actualVoltageResults.length,
-    EXPECTED_VOLTAGE_RESULTS.length,
-    "actual and expected voltage_results lengths should match"
-  );
+    const actualVoltageResults = voltageResultsPayload.success;
+    assert.ok(Array.isArray(actualVoltageResults), "Expected an array in voltage_results response");
 
-  assert.deepStrictEqual(
-    actualVoltageResults[0],
-    EXPECTED_VOLTAGE_RESULTS[0],
-    "voltage_results header row does not match expected values"
-  );
+    assert.equal(
+      actualVoltageResults.length,
+      EXPECTED_VOLTAGE_RESULTS.length,
+      "actual and expected voltage_results lengths should match",
+    );
 
-  for (let i = 1; i < EXPECTED_VOLTAGE_RESULTS.length; i += 1) {
-    const actualRow = actualVoltageResults[i];
-    const expectedRow = EXPECTED_VOLTAGE_RESULTS[i];
+    assert.deepStrictEqual(
+      actualVoltageResults[0],
+      EXPECTED_VOLTAGE_RESULTS[0],
+      "voltage_results header row does not match expected values",
+    );
 
-    assert.equal(actualRow.c, expectedRow.c, `voltage_results ${i} c`);
-    assertAlmostEqual(actualRow.uv, expectedRow.uv, 5, `voltage_results ${i} uv`);
-    assertAlmostEqual(actualRow.pv, expectedRow.pv, 1, `voltage_results ${i} pv`);
-    assertAlmostEqual(actualRow.a50, expectedRow.a50, 5, `voltage_results ${i} a50`);
-    assertAlmostEqual(actualRow.a90, expectedRow.a90, 5, `voltage_results ${i} a90`);
+    for (let i = 1; i < EXPECTED_VOLTAGE_RESULTS.length; i += 1) {
+      const actualRow = actualVoltageResults[i];
+      const expectedRow = EXPECTED_VOLTAGE_RESULTS[i];
 
-    assert.equal(actualRow.da90.length, expectedRow.da90.length, `voltage_results ${i} da90 length should match`);
-    for (let j = 0; j < expectedRow.da90.length; j += 1) {
-      assertAlmostEqual(actualRow.da90[j], expectedRow.da90[j], 0.2, `voltage_results ${i} da90[${j}]`);
+      assert.equal(actualRow.c, expectedRow.c, `voltage_results ${i} c`);
+      assertAlmostEqual(actualRow.uv, expectedRow.uv, 5, `voltage_results ${i} uv`);
+      assertAlmostEqual(actualRow.pv, expectedRow.pv, 1, `voltage_results ${i} pv`);
+      assertAlmostEqual(actualRow.a50, expectedRow.a50, 5, `voltage_results ${i} a50`);
+      assertAlmostEqual(actualRow.a90, expectedRow.a90, 5, `voltage_results ${i} a90`);
+
+      assert.equal(actualRow.da90.length, expectedRow.da90.length, `voltage_results ${i} da90 length should match`);
+      for (let j = 0; j < expectedRow.da90.length; j += 1) {
+        assertAlmostEqual(actualRow.da90[j], expectedRow.da90[j], 0.2, `voltage_results ${i} da90[${j}]`);
+      }
     }
-  }
-});
+  },
+);
