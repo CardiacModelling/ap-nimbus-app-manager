@@ -6,9 +6,9 @@
 
 # If the FROM is changed then server.js's OPTION's help facility may require
 # modification to reflect different ApPredict help or lookup availability.
-FROM cardiacmodelling/appredict-with-emulators:2.0.0
+FROM cardiacmodelling/appredict-with-emulators:2.1.0
 
-LABEL version="2.0.0"
+LABEL version="2.1.0"
 
 ARG node_version=20
 
